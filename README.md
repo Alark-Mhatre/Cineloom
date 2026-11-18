@@ -1,38 +1,32 @@
 # Cineloom
 
-Cineloom uses TMDb for its Trending Today, Popular, and Top Rated movie lists.
-The API server keeps the TMDb Read Access Token out of the browser bundle.
+Cineloom is a React movie tracker that fetches movie data directly from the
+TMDb API in the browser. It has no Express server, Netlify Functions, or
+application-owned API proxy.
 
-## Setup
+## Run locally
 
 1. Copy `.env.example` to `.env.local`.
-2. Create a TMDb account and generate a Read Access Token in the API settings.
-3. Set `TMDB_READ_ACCESS_TOKEN` in `.env.local` to that token.
-4. Run `npm install`, then `npm run dev`.
+2. Set `VITE_TMDB_READ_ACCESS_TOKEN` to your TMDb Read Access Token.
+3. Install dependencies with `npm install`.
+4. Run `npm run dev` and open the URL printed by Vite.
 
-The Vite app runs at `http://localhost:5173`; its `/api` requests are proxied to
-the local Express API server. The shared TMDb service caches movie sections for
-five minutes and movie details for one hour per server instance.
+If you previously configured `TMDB_READ_ACCESS_TOKEN`, rename it to
+`VITE_TMDB_READ_ACCESS_TOKEN` in `.env.local` and in Netlify's environment
+variables.
 
 ## Deploy to Netlify
 
-The site is configured with `netlify.toml` to build the Vite app, publish
-`dist`, and serve the movie API through Netlify Functions. It uses locally
-compiled Tailwind CSS and does not rely on the Tailwind CDN for production
-styles. The TMDb token must remain server-side:
+Netlify only builds and serves the static Vite site. Set
+`VITE_TMDB_READ_ACCESS_TOKEN` in the Netlify site's environment variables, then
+deploy the project. The Netlify build configuration contains no functions or
+API rewrites.
 
-1. Push this project to a Git provider supported by Netlify.
-2. In Netlify, choose **Add new site → Import an existing project** and select
-   the repository. Netlify reads the build and functions settings from
-   `netlify.toml`.
-3. In the site's **Environment variables** settings, add
-   `TMDB_READ_ACCESS_TOKEN` with your TMDb Read Access Token.
-4. Trigger a deploy and check the deployment log. The site uses the same
-   `/api` routes locally and on Netlify.
+**Important:** Vite embeds `VITE_*` variables in the browser bundle. With this
+direct-browser setup, visitors can inspect and reuse the TMDb token. This is
+not a secret-safe configuration. Restrict or rotate the token in TMDb settings
+as needed; keeping it private would require a server-side proxy, which this
+project intentionally does not use.
 
-Do not add the TMDb token to frontend variables such as `VITE_*` or commit it
-to the repository. The Netlify functions need to be enabled for production
-movie data, search, and details requests to work.
-
-Movie data and images are provided by TMDb. This product uses the TMDB API but
-is not endorsed or certified by TMDB.
+Movie data and images are provided by TMDb. Cineloom uses the TMDB API but is
+not endorsed or certified by TMDB.

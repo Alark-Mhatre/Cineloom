@@ -162,8 +162,8 @@ This module exports `INITIAL_COMMUNITY_POSTS`, currently an empty array. It is
 the fallback starting dataset used by `useCommunityPosts` when the browser has
 no saved community posts.
 
-Movie catalog data is not hard-coded here; it is loaded from TMDb through the
-server API.
+Movie catalog data is not hard-coded here; it is fetched directly from TMDb by
+the browser.
 
 ## How the files work together
 
@@ -171,9 +171,7 @@ server API.
 
 1. `main.jsx` mounts `App`.
 2. `App` calls `useMovies`, which calls `fetchMovieSections`.
-3. The API helper sends a request to `/api/movies`; during development, Vite
-   proxies it to the Express server, while Netlify rewrites it to a Netlify
-   Function.
+3. The API helper sends a request directly to TMDb's movie-list endpoints.
 4. `useMovies` exposes the result to `App`, which passes it to `DiscoverView`.
 5. Search text travels from the header to `App`, then to `useMovieSearch`.
 6. After the minimum query length and debounce delay, search results are
@@ -204,8 +202,7 @@ server API.
 React UI
   App.jsx
    ├── useMovies / useMovieSearch / useMovieDetails
-   │     └── api/tmdb.jsx
-   │           └── /api proxy (Vite) → Express server → TMDb
+   │     └── api/tmdb.jsx → TMDb API (direct browser requests)
    ├── useWatchlist → browser localStorage
    ├── useCommunityPosts → browser localStorage
    └── useToast → timed in-memory notification
@@ -213,9 +210,9 @@ React UI
 
 ## Notes
 
-- The movie and search requests require a valid TMDb read access token in the
-  server environment; on Netlify, set `TMDB_READ_ACCESS_TOKEN` in site
-  environment variables.
+- The movie and search requests require `VITE_TMDB_READ_ACCESS_TOKEN` in the
+  local `.env.local` or Netlify build environment. Vite includes it in the
+  public bundle, so visitors can inspect it. There is no backend or API proxy.
 - Watchlist and community information is stored in the current browser.
 - Watchlist entries include a movie snapshot so search results not present in
   the home-page sections remain visible. Legacy ID-only entries are restored
