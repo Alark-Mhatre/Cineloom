@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#fbfaf6" />
+    <title>Cineloom Community Movie Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              netflix: {
+                red: "#f2e7c3",
+                darkred: "#e5d18f",
+                butter: "#806a2b",
+                black: "#2f2c23",
+                page: "#fbfaf6",
+                card: "#ffffff",
+                gray: "#777265",
+                lightgray: "#3e3a31",
+              },
+              yellow: { 400: "#f2e7c3" },
+            },
+          },
+        },
+      };
+    </script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-netflix-page min-h-screen text-netflix-lightgray flex flex-col selection:bg-netflix-red selection:text-netflix-black">
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
