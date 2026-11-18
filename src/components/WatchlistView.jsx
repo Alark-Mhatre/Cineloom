@@ -12,6 +12,8 @@ const FILTERS = [
 export default function WatchlistView({
   movies,
   stats,
+  recoveryError,
+  onRetryRecovery,
   onOpenMovie,
   onRemoveMovie,
 }) {
@@ -62,6 +64,22 @@ export default function WatchlistView({
           </button>
         ))}
       </div>
+
+      {recoveryError && (
+        <div
+          role="alert"
+          className="flex flex-wrap items-center justify-between gap-3 border border-black/10 bg-black/[0.03] px-4 py-3 text-xs text-netflix-gray"
+        >
+          <span>{recoveryError}</span>
+          <button
+            type="button"
+            onClick={onRetryRecovery}
+            className="whitespace-nowrap text-netflix-butter hover:text-netflix-black"
+          >
+            Retry
+          </button>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-x-4 gap-y-7 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
         {visibleMovies.length ? (

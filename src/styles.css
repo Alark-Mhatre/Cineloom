@@ -1,3 +1,16 @@
+@import "tailwindcss";
+
+@theme {
+  --color-netflix-red: #f2e7c3;
+  --color-netflix-darkred: #e5d18f;
+  --color-netflix-butter: #806a2b;
+  --color-netflix-black: #2f2c23;
+  --color-netflix-page: #fbfaf6;
+  --color-netflix-card: #ffffff;
+  --color-netflix-gray: #777265;
+  --color-netflix-lightgray: #3e3a31;
+}
+
 :root {
   color-scheme: light;
   font-family: "Inter", sans-serif;

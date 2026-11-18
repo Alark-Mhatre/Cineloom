@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export function useToast() {
   const [toast, setToast] = useState(null);
@@ -12,11 +12,11 @@ export function useToast() {
     [],
   );
 
-  function showToast(message, icon = "fa-circle-check") {
+  const showToast = useCallback((message, icon = "fa-circle-check") => {
     window.clearTimeout(timeoutRef.current);
     setToast({ message, icon });
     timeoutRef.current = window.setTimeout(() => setToast(null), 3000);
-  }
+  }, []);
 
   return { toast, showToast };
 }

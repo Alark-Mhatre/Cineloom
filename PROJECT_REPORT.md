@@ -88,7 +88,8 @@ The dialog also lets a viewer change the movie’s watchlist status.
 - **Vite** serves the frontend during development and creates production builds.
 - **Tailwind CSS** supplies utility styles; [styles.css](./src/styles.css)
   contains shared styling and accessibility-related focus and motion rules.
-- **Express** provides a small server-side API proxy for TMDb.
+- **Express** provides the local development API; Netlify Functions expose the
+  same API routes in production.
 - **TMDb API** supplies movie lists, search results, metadata, images, cast, and
   US watch-provider data.
 - **Browser `localStorage`** stores the watchlist, community posts, and selected
@@ -103,15 +104,20 @@ The dialog also lets a viewer change the movie’s watchlist status.
 3. [useMovies.jsx](./src/hooks/useMovies.jsx) requests the movie collections
    from the frontend API helper and exposes loading and retry state.
 4. [tmdb.jsx](./src/api/tmdb.jsx) sends browser requests to `/api` endpoints.
-5. Vite forwards those `/api` requests to the local Express server, configured
-   in [vite.config.jsx](./vite.config.jsx).
-6. [server.jsx](./server.jsx) adds the TMDb authorization token on the server,
-   calls TMDb, normalizes the response, and returns application-friendly JSON.
+5. In local development, Vite forwards `/api` requests to the Express server
+   configured in [vite.config.jsx](./vite.config.jsx). On Netlify,
+   [netlify.toml](./netlify.toml) rewrites the same routes to serverless
+   functions.
+6. [server/tmdb-service.mjs](./server/tmdb-service.mjs) adds the TMDb
+   authorization token server-side, calls TMDb, normalizes the response, and
+   returns application-friendly data. Both [server.jsx](./server.jsx) and the
+   [Netlify functions](./netlify/functions/) use this service.
 7. React components render the collections and respond to user actions.
 
 The TMDb token is read from `.env.local` by the server, rather than being
 included in browser JavaScript. Do not commit `.env.local` or expose the token
-in frontend code.
+in frontend code. For a Netlify deploy, configure `TMDB_READ_ACCESS_TOKEN` in
+the site's environment variables.
 
 ### API endpoints
 
@@ -121,8 +127,9 @@ in frontend code.
 | `GET /api/search?q=...` | Searches TMDb for movies matching a query. |
 | `GET /api/movies/:id` | Fetches extended details for one movie. |
 
-The server caches movie sections for five minutes, genre names for one hour,
-and movie details for one hour. Search results are limited to 20 items.
+The service caches movie sections for five minutes, genre names for one hour,
+and movie details for one hour per running server instance. Search results are
+limited to 20 items.
 
 ### State and persistence
 
@@ -136,11 +143,11 @@ and movie details for one hour. Search results are limited to 20 items.
 
 ### Error handling
 
-Network and API errors are returned by the Express endpoints and presented in
-the discovery or search views. Requests use `AbortController` so obsolete
-requests can be cancelled when components update or unmount. The React
-error-boundary component also catches rendering and unhandled application
-errors.
+Network and API errors are returned by the Express endpoints locally or by
+Netlify Functions in production, then presented in the discovery or search
+views. Requests use `AbortController` so obsolete requests can be cancelled
+when components update or unmount. The React error-boundary component also
+catches rendering and unhandled application errors.
 
 ## Source code directory
 
@@ -150,6 +157,15 @@ duplicated in this report.
 ```text
 .
 ├── index.html
+├── netlify.toml
+├── netlify/
+│   └── functions/
+│       ├── movies.mjs
+│       ├── search.mjs
+│       ├── movie-details.mjs
+│       └── _shared/tmdb.mjs
+├── server/
+│   └── tmdb-service.mjs
 ├── server.jsx
 ├── vite.config.jsx
 └── src/
@@ -193,6 +209,9 @@ duplicated in this report.
 | [main.jsx](./src/main.jsx) | React entry point and error-boundary setup. |
 | [styles.css](./src/styles.css) | Global palette, typography, focus styles, motion preferences, and card effects. |
 | [server.jsx](./server.jsx) | Express API, TMDb access, response normalization, and server-side caching. |
+| [server/tmdb-service.mjs](./server/tmdb-service.mjs) | Shared TMDb request, normalization, timeout, and cache logic for local and Netlify APIs. |
+| [netlify.toml](./netlify.toml) | Netlify build, function directory, Node version, and API/SPA rewrites. |
+| [netlify/functions/](./netlify/functions/) | Production serverless API handlers for movie sections, search, and details. |
 | [vite.config.jsx](./vite.config.jsx) | React plugin and local `/api` proxy configuration. |
 | [api/tmdb.jsx](./src/api/tmdb.jsx) | Frontend helper functions for movie, search, and detail requests. |
 | [data/movies.jsx](./src/data/movies.jsx) | Initial community-post data. |

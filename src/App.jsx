@@ -38,9 +38,25 @@ export default function App() {
   const [selectedMovie, setSelectedMovie] = useState(null);
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
   const { sections, movies, isLoading, error, retry } = useMovies();
-  const { watchlist, savedMovies, stats, addMovie, removeMovie, updateMovieStatus } =
-    useWatchlist(movies);
-  const { filteredPosts, filter, setFilter, addPost, toggleUpvote } =
+  const {
+    watchlist,
+    savedMovies,
+    stats,
+    storageWarning: watchlistStorageWarning,
+    recoveryError,
+    retryRecovery,
+    addMovie,
+    removeMovie,
+    updateMovieStatus,
+  } = useWatchlist(movies);
+  const {
+    filteredPosts,
+    filter,
+    setFilter,
+    addPost,
+    toggleUpvote,
+    storageWarning: postsStorageWarning,
+  } =
     useCommunityPosts();
   const { toast, showToast } = useToast();
   const movieDetailsState = useMovieDetails(selectedMovie);
@@ -60,6 +76,13 @@ export default function App() {
   }, [activeTab]);
 
   useEffect(() => {
+    const warnings = [watchlistStorageWarning, postsStorageWarning].filter(Boolean);
+    if (warnings.length) {
+      showToast(warnings.join(" "), "fa-circle-exclamation");
+    }
+  }, [watchlistStorageWarning, postsStorageWarning, showToast]);
+
+  useEffect(() => {
     function handlePopState() {
       setPathname(window.location.pathname);
     }
@@ -68,30 +91,14 @@ export default function App() {
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
-  useEffect(() => {
-    if (
-      !error &&
-      !searchError &&
-      !(selectedMovie && movieDetailsState.error)
-    ) {
-      return;
-    }
-
-    //useEffect to perform side effects in functional components
-    if (window.location.pathname !== "/error") {
-      window.history.pushState({ error: true }, "", "/error");
-    }
-    setPathname("/error");
-  }, [error, searchError, movieDetailsState.error, selectedMovie]);
-
   //Changes the active view tab and smoothly scrolls the window back to the top
   function switchTab(tab) {
     setActiveTab(tab);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function addToWatchlist(movieId) {
-    const savedEntry = watchlist[movieId];
+  function addToWatchlist(movie) {
+    const savedEntry = watchlist[movie.id];
     if (savedEntry) {
       showToast(
         `Already added to ${WATCHLIST_STATUS_LABELS[savedEntry.status] || "your watchlist"}.`,
@@ -100,7 +107,7 @@ export default function App() {
       return;
     }
 
-    addMovie(movieId);
+    addMovie(movie);
     showToast("Added to Want to Watch.", "fa-circle-check");
   }
 
@@ -114,11 +121,11 @@ export default function App() {
     showToast("Removed from your watchlist.", "fa-circle-minus");
   }
 
-  function updateWatchlistStatus(movieId, status) {
-    const currentEntry = watchlist[movieId];
+  function updateWatchlistStatus(movie, status) {
+    const currentEntry = watchlist[movie.id];
 
     if (status === "none") {
-      removeFromWatchlist(movieId);
+      removeFromWatchlist(movie.id);
       return;
     }
 
@@ -130,7 +137,7 @@ export default function App() {
       return;
     }
 
-    updateMovieStatus(movieId, status);
+    updateMovieStatus(movie, status);
     showToast(
       currentEntry
         ? `Moved to ${WATCHLIST_STATUS_LABELS[status]}.`
@@ -226,6 +233,8 @@ export default function App() {
           <WatchlistView
             movies={savedMovies}
             stats={stats}
+              recoveryError={recoveryError}
+              onRetryRecovery={retryRecovery}
             onOpenMovie={setSelectedMovie}
             onRemoveMovie={removeFromWatchlist}
           />

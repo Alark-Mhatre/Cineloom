@@ -208,7 +208,7 @@ export default function MovieModal({
                     id="modalWatchlistStatus"
                     value={currentStatus}
                     onChange={(event) =>
-                      onUpdateStatus(movie.id, event.target.value)
+                      onUpdateStatus(movie, event.target.value)
                     }
                     className="field-control w-full rounded-lg px-3 py-2.5 text-xs focus:border-netflix-butter focus:outline-none"
                   >

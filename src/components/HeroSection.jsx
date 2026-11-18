@@ -43,7 +43,7 @@ export default function HeroSection({
           </button>
           <button
             type="button"
-            onClick={() => onAddToWatchlist(movie.id)}
+            onClick={() => onAddToWatchlist(movie)}
             className="flex h-10 w-10 items-center justify-center rounded-md border border-white/25 bg-black/20 text-white transition-colors hover:bg-white/10"
             title={isSaved ? "Already in your watchlist" : "Add to Watchlist"}
             aria-label={

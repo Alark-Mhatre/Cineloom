@@ -46,7 +46,7 @@ export default function MovieCard({
       </button>
       <button
         type="button"
-        onClick={() => onAddToWatchlist(movie.id)}
+        onClick={() => onAddToWatchlist(movie)}
         className="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-md border border-white/20 bg-black/65 text-white/80 transition-colors hover:border-netflix-red hover:text-netflix-red"
         title={isSaved ? "Already in your watchlist" : "Add to Watchlist"}
         aria-label={

@@ -172,7 +172,8 @@ server API.
 1. `main.jsx` mounts `App`.
 2. `App` calls `useMovies`, which calls `fetchMovieSections`.
 3. The API helper sends a request to `/api/movies`; during development, Vite
-   proxies it to the Express server.
+   proxies it to the Express server, while Netlify rewrites it to a Netlify
+   Function.
 4. `useMovies` exposes the result to `App`, which passes it to `DiscoverView`.
 5. Search text travels from the header to `App`, then to `useMovieSearch`.
 6. After the minimum query length and debounce delay, search results are
@@ -213,8 +214,12 @@ React UI
 ## Notes
 
 - The movie and search requests require a valid TMDb read access token in the
-  server environment.
+  server environment; on Netlify, set `TMDB_READ_ACCESS_TOKEN` in site
+  environment variables.
 - Watchlist and community information is stored in the current browser.
+- Watchlist entries include a movie snapshot so search results not present in
+  the home-page sections remain visible. Legacy ID-only entries are restored
+  through the movie-details endpoint when possible.
 - Community comment counts are part of the displayed post shape, but this
   selected source does not include a comment-creation feature.
 - The watchlist hour value is an estimate based on a fixed per-movie amount.

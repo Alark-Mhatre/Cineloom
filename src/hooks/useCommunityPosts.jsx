@@ -4,18 +4,53 @@ import { INITIAL_COMMUNITY_POSTS } from "../data/movies.jsx";
 const POSTS_STORAGE_KEY = "cineloom_community_posts";
 const FILTER_STORAGE_KEY = "cineloom_community_filter";
 const VALID_FILTERS = new Set(["all", "review", "theory", "discussion"]);
+const VALID_POST_TYPES = new Set(["review", "theory", "discussion"]);
 
 function readPosts() {
   const savedPosts = localStorage.getItem(POSTS_STORAGE_KEY);
   if (!savedPosts) {
-    return INITIAL_COMMUNITY_POSTS.map((post) => ({ ...post }));
+    return {
+      posts: INITIAL_COMMUNITY_POSTS.map((post) => ({ ...post })),
+      warning: "",
+    };
   }
 
-  const posts = JSON.parse(savedPosts);
-  if (!Array.isArray(posts)) {
-    throw new Error("Saved community posts are invalid. Clear Cineloom storage and reload.");
+  try {
+    const posts = JSON.parse(savedPosts);
+    if (!Array.isArray(posts)) {
+      throw new Error("Saved community posts must be an array.");
+    }
+
+    const validPosts = posts.filter(
+      (post) =>
+        post &&
+        (typeof post.id === "string" || typeof post.id === "number") &&
+        VALID_POST_TYPES.has(post.type) &&
+        Number.isFinite(post.rating) &&
+        typeof post.author === "string" &&
+        typeof post.content === "string" &&
+        typeof post.movieTitle === "string" &&
+        typeof post.timestamp === "string" &&
+        Number.isFinite(post.upvotes) &&
+        Number.isFinite(post.commentsCount) &&
+        typeof post.userUpvoted === "boolean",
+    );
+
+    return {
+      posts: validPosts,
+      warning:
+        validPosts.length === posts.length
+          ? ""
+          : "Some invalid saved community posts were removed.",
+    };
+  } catch (error) {
+    console.error("Could not read saved community posts; resetting them:", error);
+    localStorage.removeItem(POSTS_STORAGE_KEY);
+    return {
+      posts: INITIAL_COMMUNITY_POSTS.map((post) => ({ ...post })),
+      warning: "Saved community posts were invalid and have been reset.",
+    };
   }
-  return posts;
 }
 
 function readFilter() {
@@ -24,7 +59,8 @@ function readFilter() {
 }
 
 export function useCommunityPosts() {
-  const [posts, setPosts] = useState(readPosts);
+  const [initialData] = useState(readPosts);
+  const [posts, setPosts] = useState(initialData.posts);
   const [filter, setFilter] = useState(readFilter);
 
   useEffect(() => {
@@ -58,5 +94,12 @@ export function useCommunityPosts() {
     );
   }
 
-  return { filteredPosts, filter, setFilter, addPost, toggleUpvote };
+  return {
+    filteredPosts,
+    filter,
+    setFilter,
+    addPost,
+    toggleUpvote,
+    storageWarning: initialData.warning,
+  };
 }
